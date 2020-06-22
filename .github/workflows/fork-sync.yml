@@ -5,7 +5,7 @@ name: Fork Sync
 # Runs at 13:00 UTC every day
 on:
   schedule:
-    - cron: '0 13  * *'
+    - cron: '0 13 * * *'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
