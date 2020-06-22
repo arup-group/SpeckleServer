@@ -13,5 +13,5 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: custom tests
+- script: echo "custom tests"
   displayName: 'Placeholder'
