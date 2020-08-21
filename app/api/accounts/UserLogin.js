@@ -25,6 +25,10 @@ module.exports = function( req, res ) {
           return res.status( 401 ).send( { success: false, message: 'Invalid credentials.' } )
         }
         myUser.logins.push( { date: Date.now( ) } )
+        const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
+        if ( adminUsers.includes( myUser.email ) && myUser.role != 'admin' )
+          myUser.role = 'admin'
+          myUser.markModified( 'role' )
         myUser.save( )
         let token = 'JWT ' + jwt.sign( { _id: myUser._id, name: myUser.name }, sessionSecret, { expiresIn: '24h' } )
         let userObject = myUser.toObject( )

@@ -25,6 +25,7 @@ module.exports = ( req, res ) => {
 
   let sessionSecret = process.env.SESSION_SECRET
   let userCount = 1 // do not default to 0
+  const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
 
   User.count( {} )
     .then( count => {
@@ -35,6 +36,8 @@ module.exports = ( req, res ) => {
       if ( user ) throw new Error( 'Email taken. Please login. Thanks!' )
       myUser.apitoken = 'JWT ' + jwt.sign( { _id: myUser._id }, sessionSecret, { expiresIn: '2y' } )
       if ( userCount === 0 && process.env.FIRST_USER_ADMIN === 'true' )
+        myUser.role = 'admin'
+      if ( adminUsers.includes( myUser.email ) )
         myUser.role = 'admin'
       return myUser.save( )
     } )

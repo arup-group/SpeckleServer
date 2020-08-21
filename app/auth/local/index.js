@@ -64,8 +64,19 @@ module.exports = {
       ( req, res, next ) => {
         passport.authenticate( 'local', { failureRedirect: `/signin/local/login?err=true` } )( req, res, next )
       },
-      ( req, res, next ) => {
+      async ( req, res, next ) => {
         req.user.token = 'JWT ' + jwt.sign( { _id: req.user._id, name: req.user.name, email: req.user.email }, process.env.SESSION_SECRET, { expiresIn: '24h' } )
+
+        let existingUser = await User.findOne( { email: req.user.email } )
+        if ( existingUser ){
+          const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
+          if ( adminUsers.includes( req.user.email ) && existingUser.role != 'admin' ) {
+            existingUser.role = 'admin'
+            existingUser.markModified( 'role' )
+            await existingUser.save( )
+          }
+        }
+
         next( )
       },
       handleLogin )
@@ -140,6 +151,11 @@ module.exports = {
             myUser.apitoken = 'JWT ' + jwt.sign( { _id: myUser._id }, process.env.SESSION_SECRET, { expiresIn: '2y' } )
 
             if ( userCount === 0 && process.env.FIRST_USER_ADMIN === 'true' )
+              myUser.role = 'admin'
+
+            // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
+            const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
+            if ( adminUsers.includes( myUser.email ) )
               myUser.role = 'admin'
 
             let savedUser = await myUser.save( )

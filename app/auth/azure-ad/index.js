@@ -56,10 +56,16 @@ module.exports = {
           }
 
           try {
+            const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
             let existingUser = await User.findOne( { email: email } )
 
             // If user exists:
             if ( existingUser ) {
+              // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
+              if ( adminUsers.includes( email ) )
+                existingUser.role = 'admin'
+                existingUser.markModified( 'role' )
+
               let userObj = {
                 name: existingUser.name,
                 surname: existingUser.surname,
@@ -97,6 +103,10 @@ module.exports = {
             let token = 'JWT ' + jwt.sign( { _id: myUser._id, name: myUser.name, email: myUser.email }, process.env.SESSION_SECRET, { expiresIn: '24h' } )
 
             if ( userCount === 0 && process.env.FIRST_USER_ADMIN === 'true' )
+              myUser.role = 'admin'
+
+            // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
+            if ( adminUsers.includes( email ) )
               myUser.role = 'admin'
 
             let namePieces = name.split( /(?<=^\S+)\s/ )
