@@ -86,6 +86,7 @@ if ( cluster.isMaster ) {
   app.use( expressWinston.logger( {
     winstonInstance: logger,
     colorize: true,
+    headerBlacklist: ['authorization', 'cookie'], // this will need to be renamed when winston-express is upgraded
     msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms'
   } ) )
 
