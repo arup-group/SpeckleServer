@@ -224,6 +224,7 @@ module.exports = function ( app, express, urlRoot, plugins ) {
       version: tagVersion || '1.x.x',
       api: grouped,
       plugins: plugins,
+      telemetry: process.env.TELEMETRY,
       jnMask: process.env.JNMASK || "######-##"
     }
 
