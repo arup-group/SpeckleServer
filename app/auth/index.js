@@ -98,19 +98,32 @@ module.exports = function ( app ) {
     require( './github' ).init( app, sessionMiddleware, redirectCheck, handleLogin ),
   ].filter( s => s !== null )
 
-  // Main authentication entry page
-  app.get( '/signin',
-    sessionMiddleware,
-    redirectCheck,
-    ( req, res ) => {
-      req.session.redirectUrl = req.session.redirectUrl || req.query.redirectUrl
-      res.render( 'signin', {
-        strategies: strategies,
-        redirectUrl: req.session.redirectUrl,
-        error: req.query.err,
-        serverName: process.env.SERVER_NAME
+  if ( strategies.length == 1 && strategies[0].signinRoute == '/signin/azure' )
+  {
+    app.get( '/signin',
+      sessionMiddleware,
+      redirectCheck,
+      ( req, res ) => {
+        req.session.redirectUrl = req.session.redirectUrl || req.query.redirectUrl
+        res.redirect( '/signin/azure' )
       } )
-    } )
+  }
+  else
+  {
+    // Main authentication entry page
+    app.get( '/signin',
+      sessionMiddleware,
+      redirectCheck,
+      ( req, res ) => {
+        req.session.redirectUrl = req.session.redirectUrl || req.query.redirectUrl
+        res.render( 'signin', {
+          strategies: strategies,
+          redirectUrl: req.session.redirectUrl,
+          error: req.query.err,
+          serverName: process.env.SERVER_NAME
+        } )
+      } )
+  }
 
   app.get( '/signin/error', sessionMiddleware, ( req, res ) => {
 
