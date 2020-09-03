@@ -98,14 +98,14 @@ module.exports = function ( app ) {
     require( './github' ).init( app, sessionMiddleware, redirectCheck, handleLogin ),
   ].filter( s => s !== null )
 
-  if ( strategies.length == 1 && strategies[0].signinRoute == '/signin/azure' )
+  if ( strategies.length == 1 )
   {
     app.get( '/signin',
       sessionMiddleware,
       redirectCheck,
       ( req, res ) => {
         req.session.redirectUrl = req.session.redirectUrl || req.query.redirectUrl
-        res.redirect( '/signin/azure' )
+        res.redirect( strategies[0].signinRoute )
       } )
   }
   else
