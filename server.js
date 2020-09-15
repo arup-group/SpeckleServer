@@ -92,7 +92,7 @@ if ( cluster.isMaster ) {
   // Mongo handlers
   mongoose.Promise = global.Promise
 
-  mongoose.connect( process.env.MONGODB_URI, { useNewUrlParser: true, autoReconnect: true, reconnectTries: 5, keepAlive: 10 }, ( err ) => {
+  mongoose.connect( process.env.MONGODB_URI, { useNewUrlParser: true, autoReconnect: true, reconnectTries: 20, reconnectInterval: 1000, keepAlive: 10 }, ( err ) => {
     if ( err ) throw err
     else logger.debug( 'connected to mongoose at ' + process.env.MONGODB_URI )
   } )
