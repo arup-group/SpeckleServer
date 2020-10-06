@@ -1,0 +1,18 @@
+# Make sure the Staging environment is running each time a PR is Opened
+
+name: Create Staging Environment
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch to create staging environment
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: arup-group/tf-speckle-infrastructure
+          event-type: apply-environment
+          client-payload: '{"action": "apply"}'
