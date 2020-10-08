@@ -1,0 +1,6 @@
+{
+  "inputs": {
+    "tag": "1.9.12",
+    "ansibleScriptsBranch": "master"
+  }
+}
