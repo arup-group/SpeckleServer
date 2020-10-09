@@ -27,4 +27,4 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: arup-group/tf-speckle-infrastructure
           event-type: apply-environment
-          client-payload: '{"action": "plan"}'
+          client-payload: '{"action": "destroy"}'
