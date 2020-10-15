@@ -32,7 +32,7 @@ module.exports = ( req, res ) => {
       res.send( { success: true, message: 'Master stream list returned.', resources: streams } )
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error(  err  )
       res.status( 400 )
       res.send( { success: false, message: 'Something failed.' } )
     } )

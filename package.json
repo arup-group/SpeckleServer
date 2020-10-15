@@ -4,7 +4,7 @@
   "description": "This is the speckle server. Orchestrates all the communication channels between clients and does heavy lifting for geometry and other data.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node --max-old-space-size=1536 server.js",
     "dev": "nodemon server.js",
     "lint": "eslint . --fix",
     "test": "NODE_ENV=test nyc mocha --timeout 120000 --exit --recursive"
@@ -47,6 +47,7 @@
     "uuid": "^3.4.0",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.10.0",
+    "winston-postgres": "0.0.4",
     "ws": "^6.2.1"
   },
   "devDependencies": {

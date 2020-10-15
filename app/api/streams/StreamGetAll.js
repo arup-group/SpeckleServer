@@ -28,7 +28,7 @@ module.exports = ( req, res ) => {
   finalCriteria.$or = [
     { owner: req.user._id },
     { 'canWrite': mongoose.Types.ObjectId( req.user._id ) },
-    { 'canRead': mongoose.Types.ObjectId( req.user._id ) },
+    { 'canRead': mongoose.Types.ObjectId( req.user._id ) }
     // { 'private': false }
   ]
 
@@ -58,7 +58,7 @@ module.exports = ( req, res ) => {
       res.send( { success: true, message: 'Stream list returned. Contains both owned and shared with streams.', resources: streams } )
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( 400 )
       res.send( { success: false, message: 'Something failed.' } )
     } )
