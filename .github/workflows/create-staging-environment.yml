@@ -1,0 +1,101 @@
+# Make sure the Staging environment is running each time a PR is Opened
+
+name: Deploy to staging Environment
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: tag to deploy (without the v)
+        required: true
+        default: '1.9.10'
+      ansibleScriptsBranch:
+        description: branch of the  global-speckle-server-ansible-playbooks repos
+        required: true
+        default: 'master'
+
+jobs:
+  stagingDeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if server is already running
+        id: server
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-speckle.arup.com/api)
+          echo "::set-output name=status::$status"
+
+      - name: Repository Dispatch to create staging environment
+        if: steps.server.outputs.status != 200
+        uses: peter-evans/repository-dispatch@v1.1.2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: arup-group/tf-speckle-infrastructure
+          event-type: apply-environment
+          client-payload: '{"action": "apply"}'
+
+      - name: Wait until environment is up and running
+        if: steps.server.outputs.status != 200
+        run: |
+          SLEEP_PERIOD=5s
+          TRY=0
+          sleep 20s
+          until [ $TRY -eq 30 ] || [[ $(curl -H "Authorization: token ${{ secrets.REPO_ACCESS_TOKEN }}" https://api.github.com/repos/arup-group/tf-speckle-infrastructure/actions/workflows/staging-terraform.yml/runs | jq -r '.workflow_runs[0].status') == completed ]]; do
+            sleep $SLEEP_PERIOD
+            TRY=$((TRY+1))
+          done
+          [ $TRY -lt 30 ]
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Update reference version of speckle server
+        run: |
+          aws ssm put-parameter --name /staging-speckle/version --value ${{ github.event.inputs.tag }} --overwrite
+      
+      - name: Run task to deploy speckle server
+        id: deploy
+        run: |
+          command=$(aws ssm send-command \
+              --targets "Key=tag:AnsibleAutomation,Values=staging-speckle-playbook" \
+              --document-name "AWS-ApplyAnsiblePlaybooks" \
+              --output-s3-bucket-name "arup-staging-speckle-playbook-logs" \
+              --parameters '{"Check": ["False"],"InstallDependencies": ["True"],"PlaybookFile": ["ireland_staging.yml"],"SourceInfo": ["{\"owner\": \"arup-group\", \"repository\":\"global-speckle-server-ansible-playbooks\",\"getOptions\":\"branch:${{ github.event.inputs.ansibleScriptsBranch }}\",\"tokenInfo\":\"{{ssm-secure:github-token}}\"}"],"SourceType": ["GitHub"],"Verbose": ["-v"]}')
+          command_id=$(echo $command | jq -r '.Command.CommandId')
+          echo "::set-output name=commandId::$command_id"
+        
+      - name: Wait until server has been deployed
+        run: |
+          SLEEP_PERIOD=5s
+          TRY=0
+          sleep 20s
+          outcome=Pending
+          until [ $TRY -eq 30 ] || [ $outcome == Success ] || [ $outcome == Failed ]; do
+            outcome=$(aws ssm list-commands --command-id ${{ steps.deploy.outputs.commandId }} | jq -r '.Commands[0].Status')
+            sleep $SLEEP_PERIOD
+            TRY=$((TRY+1))
+          done
+          [ $outcome == Success ]
+
+      - name: Download logs from failed run
+        if: failure()
+        run: |
+          aws s3 sync s3://arup-staging-speckle-playbook-logs/${{ steps.deploy.outputs.commandId }} logs
+      
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          path: logs
+          
+      - name: Verify server has been updated
+        run: |
+          SLEEP_PERIOD=5s
+          TRY=0
+          until [ $TRY -eq 30 ] || [[ $(curl https://ireland.staging-speckle.arup.com/api | jq -r '.version') == v${{ github.event.inputs.tag }} ]]; do
+            sleep $SLEEP_PERIOD
+            TRY=$((TRY+1))
+          done
+          [ $TRY -lt 30 ]

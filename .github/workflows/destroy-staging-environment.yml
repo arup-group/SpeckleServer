@@ -1,0 +1,30 @@
+# Destroy staging environment at 7pm and 7am UTC unless the environment was
+# created less than 4 hours ago. In that case don't destroy
+name: Destroy Staging Environment
+
+on:
+  schedule:
+    - cron: '0 19,07 * * *'
+
+jobs:
+  destroyStaging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Environment was created more than 8 hours ago
+        id: oldEnvironment
+        run: |
+          apt update && apt install -y jq
+          created_at=$(curl -H "Authorization: token ${{ secrets.REPO_ACCESS_TOKEN }}" https://api.github.com/repos/arup-group/SpeckleServer/actions/workflows/create-staging-environment.yml/runs | jq -r '.workflow_runs[0].created_at')
+          created_at_date=$(date -d $created_at +%s)
+          four_hours_ago=$(date -d '4 hours ago' +%s)
+          more_than_four_hours_ago=$([ $created_at_date -le $four_hours_ago ] && echo true || echo false )
+          echo "::set-output name=delete::$more_than_four_hours_ago"
+
+      - name: Repository Dispatch to create staging environment
+        if: steps.oldEnvironment.outputs.delete == 'true'
+        uses: peter-evans/repository-dispatch@v1.1.2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: arup-group/tf-speckle-infrastructure
+          event-type: apply-environment
+          client-payload: '{"action": "destroy"}'

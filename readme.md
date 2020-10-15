@@ -45,6 +45,24 @@ To install a front-end plugin, such as the [admin ui](https://github.com/speckle
 
 **Note**: this doesn't include any front-end plugins, so you'll need to interact with a Heroku-hosted server via another front-end, such as https://app.speckle.systems.
 
+### Deploy at Arup
+
+If you have write access to this repository then you can trigger a deploy to the Staging Environment.
+
+Steps for deploy are:
+
+1. Select Actions Tab
+2. Select `Deploy to staging Environment` workflow
+3. Press the `Run Workflow` button
+4. Select the `Master` branch
+5. Input the tag to deploy in the `tag to deploy (without the v)` input box e.g. `1.9.10`
+6. Input the branch of the ansible scripts you want to run in the `branch of the global-speckle-server-ansible-playbooks repos` input box e.g. `master`
+7. Press the `Run Workflow` button
+8. Verify workflow was a success 🎉️
+9. See the artefacts attached to the workflow for logs of any errors
+
+![deploy to staging](./docs/deploy-speckle-server.gif)
+
 ## Get In Touch
 
 If you have any questions, you can get in touch with the rest of the world-wide specklers via: 
