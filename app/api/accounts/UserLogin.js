@@ -26,7 +26,7 @@ module.exports = function( req, res ) {
         }
         myUser.logins.push( { date: Date.now( ) } )
         const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
-        if ( adminUsers.includes( myUser.email ) && myUser.role != 'admin' )
+        if ( adminUsers.includes( myUser.email.toLowerCase( ) ) && myUser.role != 'admin' )
           myUser.role = 'admin'
           myUser.markModified( 'role' )
         myUser.save( )
