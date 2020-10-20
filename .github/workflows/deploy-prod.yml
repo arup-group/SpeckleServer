@@ -55,6 +55,10 @@ jobs:
       - name: Get previously deployed tag
         id: previousTag
         run: |
+          apt update && apt install -y jq unzip less
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install
           version=$(curl https://${{ github.event.inputs.region }}.speckle.arup.com/api | jq -r '.version')
           echo "::set-output name=version::$version"
 
@@ -70,7 +74,7 @@ jobs:
           aws ssm put-parameter --name /${{ github.event.inputs.region }}-speckle-prod/version --value ${{ github.event.inputs.tag }} --overwrite
       
       - name: Run task to deploy speckle server
-        id: deploy
+        id: deploySpeckleServer
         run: |
           command=$(aws ssm send-command \
               --targets "Key=tag:AnsibleAutomation,Values=${{ github.event.inputs.region }}-speckle-prod-playbook" \
@@ -88,14 +92,14 @@ jobs:
           sleep 20s
           outcome=Pending
           until [ $TRY -eq 30 ] || [ $outcome == Success ] || [ $outcome == Failed ]; do
-            outcome=$(aws ssm list-commands --command-id ${{ steps.deploy.outputs.commandId }} | jq -r '.Commands[0].Status')
+            outcome=$(aws ssm list-commands --command-id ${{ steps.deploySpeckleServer.outputs.commandId }} | jq -r '.Commands[0].Status')
             sleep $SLEEP_PERIOD
             TRY=$((TRY+1))
           done
           echo "::set-output name=outcome::$outcome"
 
       - name: Verify server has been updated
-        if: steps.serverDeployed.output.outcome == "Success"
+        if: steps.serverDeployed.output.outcome == 'Success'
         id: serverUpdateCheck
         run: |
           SLEEP_PERIOD=5s
@@ -108,23 +112,23 @@ jobs:
           echo "::set-output name=updated::$updated"
 
       - name: Download logs from failed run
-        if: steps.serverDeployed.output.outcome == "Failed" || steps.serverUpdateCheck.output.updated == "false"
+        if: steps.serverDeployed.output.outcome == 'Failed' || steps.serverUpdateCheck.output.updated == 'false'
         run: |
-          aws s3 sync s3://arup-${{ github.event.inputs.region }}-speckle-prod-playbook-logs/${{ steps.deploy.outputs.commandId }} logs
+          aws s3 sync s3://arup-${{ github.event.inputs.region }}-speckle-prod-playbook-logs/${{ steps.deploySpeckleServer.outputs.commandId }} logs
       
       - name: Upload failure logs
-        if: steps.serverDeployed.output.outcome == "Failed" || steps.serverUpdateCheck.output.updated == "false"
+        if: steps.serverDeployed.output.outcome == 'Failed' || steps.serverUpdateCheck.output.updated == 'false'
         uses: actions/upload-artifact@v2
         with:
           path: logs
     
       - name: Roll back to previous version of speckle if deploy failed
-        if: steps.serverDeployed.output.outcome == "Failed" || steps.serverUpdateCheck.output.updated == "false"
+        if: steps.serverDeployed.output.outcome == 'Failed' || steps.serverUpdateCheck.output.updated == 'false'
         run: |
           aws ssm put-parameter --name /${{ github.event.inputs.region }}-speckle-prod/version --value ${{ steps.previousTag.outputs.version }} --overwrite
 
       - name: Run task to deploy previous version of speckle
-        if: steps.serverDeployed.output.outcome == "Failed" || steps.serverUpdateCheck.output.updated == "false"
+        if: steps.serverDeployed.output.outcome == 'Failed' || steps.serverUpdateCheck.output.updated == 'false'
         run: |
           command=$(aws ssm send-command \
               --targets "Key=tag:AnsibleAutomation,Values=${{ github.event.inputs.region }}-speckle-prod-playbook" \
@@ -134,7 +138,7 @@ jobs:
           command_id=$(echo $command | jq -r '.Command.CommandId')
 
       - name: Speckle Failed to deploy
-        if: steps.serverDeployed.output.outcome == "Failed" || steps.serverUpdateCheck.output.updated == "false"
+        if: steps.serverDeployed.output.outcome == 'Failed' || steps.serverUpdateCheck.output.updated == 'false'
         run: |
           echo "::error Speckle Server deploy of ${{ github.event.inputs.tag }} caused errors reverted to previous version ${{ steps.previousTag.outputs.version }}. See logs attached to this pipeline."
           exit 1 

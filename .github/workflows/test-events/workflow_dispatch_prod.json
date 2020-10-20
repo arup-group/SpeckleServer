@@ -2,6 +2,6 @@
   "inputs": {
     "tag": "1.9.12",
     "ansibleScriptsBranch": "master",
-    "region": "Ireland"
+    "region": "australia"
   }
 }
