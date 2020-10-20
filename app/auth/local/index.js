@@ -70,7 +70,7 @@ module.exports = {
         let existingUser = await User.findOne( { email: req.user.email } )
         if ( existingUser ){
           const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
-          if ( adminUsers.includes( req.user.email ) && existingUser.role != 'admin' ) {
+          if ( adminUsers.includes( req.user.email.toLowerCase( ) ) && existingUser.role != 'admin' ) {
             existingUser.role = 'admin'
             existingUser.markModified( 'role' )
             await existingUser.save( )
@@ -155,7 +155,7 @@ module.exports = {
 
             // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
             const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
-            if ( adminUsers.includes( myUser.email ) )
+            if ( adminUsers.includes( myUser.email.toLowerCase( ) ) )
               myUser.role = 'admin'
 
             let savedUser = await myUser.save( )

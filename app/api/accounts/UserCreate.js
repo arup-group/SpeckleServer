@@ -37,7 +37,7 @@ module.exports = ( req, res ) => {
       myUser.apitoken = 'JWT ' + jwt.sign( { _id: myUser._id }, sessionSecret, { expiresIn: '2y' } )
       if ( userCount === 0 && process.env.FIRST_USER_ADMIN === 'true' )
         myUser.role = 'admin'
-      if ( adminUsers.includes( myUser.email ) )
+      if ( adminUsers.includes( myUser.email.toLowerCase( ) ) )
         myUser.role = 'admin'
       return myUser.save( )
     } )

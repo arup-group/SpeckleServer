@@ -62,7 +62,7 @@ module.exports = {
             // If user exists:
             if ( existingUser ) {
               // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
-              if ( adminUsers.includes( email ) && existingUser.role != 'admin' )
+              if ( adminUsers.includes( email.toLowerCase( ) ) && existingUser.role != 'admin' )
                 existingUser.role = 'admin'
                 existingUser.markModified( 'role' )
 
@@ -105,7 +105,7 @@ module.exports = {
               myUser.role = 'admin'
 
             // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
-            if ( adminUsers.includes( email ) )
+            if ( adminUsers.includes( email.toLowerCase( ) ) )
               myUser.role = 'admin'
 
             let namePieces = name.split( /(?<=^\S+)\s/ )
