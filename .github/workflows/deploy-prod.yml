@@ -44,6 +44,7 @@ jobs:
         id: server
         run: |
           status=$(curl -s -o /dev/null -w "%{http_code}" https://${{ github.event.inputs.region }}.speckle.arup.com/api)
+          echo $status
           echo "::set-output name=status::$status"
 
       - name: Abort deploy if server isn't running
@@ -55,10 +56,6 @@ jobs:
       - name: Get previously deployed tag
         id: previousTag
         run: |
-          apt update && apt install -y jq unzip less
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          ./aws/install
           version=$(curl https://${{ github.event.inputs.region }}.speckle.arup.com/api | jq -r '.version')
           echo "::set-output name=version::$version"
 
