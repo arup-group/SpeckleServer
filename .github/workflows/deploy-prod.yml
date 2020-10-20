@@ -48,7 +48,7 @@ jobs:
           echo "::set-output name=status::$status"
 
       - name: Abort deploy if server isn't running
-        if: steps.server.output.status != 200
+        if: steps.server.output.status != '200'
         run: |
           echo "::error Speckle server isn't up for ${{ github.event.inputs.region }}"
           exit 1
