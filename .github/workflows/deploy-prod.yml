@@ -43,7 +43,7 @@ jobs:
       - name: Get Server version
         id: server
         run: |
-          status=$(curl -s -o /dev/null -w "%{http_code}" https://${{ github.event.inputs.region }}.speckle.arup.com/api)
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://${{ github.event.inputs.region }}.${{  secrets.SPECKLE_URL }}/api)
           echo $status
           echo "::set-output name=status::$status"
 
@@ -56,7 +56,7 @@ jobs:
       - name: Get previously deployed tag
         id: previousTag
         run: |
-          version=$(curl https://${{ github.event.inputs.region }}.speckle.arup.com/api | jq -r '.version')
+          version=$(curl https://${{ github.event.inputs.region }}.${{  secrets.SPECKLE_URL }}/api | jq -r '.version')
           echo "::set-output name=version::$version"
 
       - name: Configure AWS Credentials
@@ -101,7 +101,7 @@ jobs:
         run: |
           SLEEP_PERIOD=5s
           TRY=0
-          until [ $TRY -eq 30 ] || [[ $(curl https://${{ github.event.inputs.region }}.speckle.arup.com/api | jq -r '.version') == v${{ github.event.inputs.tag }} ]]; do
+          until [ $TRY -eq 30 ] || [[ $(curl https://${{ github.event.inputs.region }}.${{  secrets.SPECKLE_URL }}/api | jq -r '.version') == v${{ github.event.inputs.tag }} ]]; do
             sleep $SLEEP_PERIOD
             TRY=$((TRY+1))
           done

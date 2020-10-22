@@ -20,7 +20,7 @@ jobs:
       - name: Check if server is already running
         id: server
         run: |
-          status=$(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-speckle.arup.com/api)
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-${{  secrets.SPECKLE_URL }}/api)
           echo "::set-output name=status::$status"
 
       - name: Repository Dispatch to create staging environment
@@ -61,7 +61,7 @@ jobs:
           command=$(aws ssm send-command \
               --targets "Key=tag:AnsibleAutomation,Values=staging-speckle-playbook" \
               --document-name "AWS-ApplyAnsiblePlaybooks" \
-              --output-s3-bucket-name "arup-staging-speckle-playbook-logs" \
+              --output-s3-bucket-name "arup-staging-${{  secrets.PLAYBOOK_LOGS  }}" \
               --parameters '{"Check": ["False"],"InstallDependencies": ["True"],"PlaybookFile": ["ireland_staging.yml"],"SourceInfo": ["{\"owner\": \"arup-group\", \"repository\":\"global-speckle-server-ansible-playbooks\",\"getOptions\":\"branch:${{ github.event.inputs.ansibleScriptsBranch }}\",\"tokenInfo\":\"{{ssm-secure:github-token}}\"}"],"SourceType": ["GitHub"],"Verbose": ["-v"]}')
           command_id=$(echo $command | jq -r '.Command.CommandId')
           echo "::set-output name=commandId::$command_id"
@@ -82,7 +82,7 @@ jobs:
       - name: Download logs from failed run
         if: failure()
         run: |
-          aws s3 sync s3://arup-staging-speckle-playbook-logs/${{ steps.deploy.outputs.commandId }} logs
+          aws s3 sync s3://arup-staging-${{  secrets.PLAYBOOK_LOGS  }}/${{ steps.deploy.outputs.commandId }} logs
       
       - name: Upload failure logs
         if: failure()
@@ -94,7 +94,7 @@ jobs:
         run: |
           SLEEP_PERIOD=5s
           TRY=0
-          until [ $TRY -eq 30 ] || [[ $(curl https://ireland.staging-speckle.arup.com/api | jq -r '.version') == v${{ github.event.inputs.tag }} ]]; do
+          until [ $TRY -eq 30 ] || [[ $(curl https://ireland.staging-${{  secrets.SPECKLE_URL }}/api | jq -r '.version') == v${{ github.event.inputs.tag }} ]]; do
             sleep $SLEEP_PERIOD
             TRY=$((TRY+1))
           done
