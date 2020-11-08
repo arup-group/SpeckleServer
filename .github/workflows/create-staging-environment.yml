@@ -20,7 +20,7 @@ jobs:
       - name: Check if server is already running
         id: server
         run: |
-          status=$(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-${{  secrets.SPECKLE_URL }}/api)
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-${{  secrets.SPECKLE_URL }}/api || echo 500)
           echo "::set-output name=status::$status"
 
       - name: Repository Dispatch to create staging environment
