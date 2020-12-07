@@ -129,6 +129,7 @@ if ( cluster.isMaster ) {
 
  // Telemetry
   require( './app/telemetry/appTelemetry' )( app )
+  require( './app/telemetry/initSentry')( app )
 
   if ( process.env.INDENT_RESPONSES === 'true' ) { app.set( 'json spaces', 2 ) }
   if ( process.env.EXPOSE_EMAILS === 'true' ) { app.enable( 'expose emails' ) }
@@ -162,6 +163,9 @@ if ( cluster.isMaster ) {
 
   // init default register/login routes
   require( './app/auth/index' )( app )
+
+  // Sentry handles errors
+  require( './app/telemetry/errorsSentry') ( app )
 
   /// /////////////////////////////////////////////////////////////////////
   /// LAUNCH                                                         /////.

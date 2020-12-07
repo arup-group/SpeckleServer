@@ -2,6 +2,7 @@
 const fs = require( 'fs' )
 const { createLogger, format, transports } = require( 'winston' )
 require( 'winston-daily-rotate-file' )
+const SentryTransport = require('./sentryTransport')
 
 const logDir = 'logs'
 const LOG_LEVEL = process.env.NODE_ENV === 'test' ? [] : process.env.LOG_LEVEL || 'debug'
@@ -27,7 +28,10 @@ const logger = createLogger( {
       level: LOG_LEVEL,
       format: format.combine( format.colorize( ), format.timestamp( { format: 'YYYY-MM-DD HH:mm:ss' } ), format.printf( info => `${info.timestamp} ${info.level}: ${info.message}` ) )
     } ),
-    drfTransport
+    drfTransport,
+    new SentryTransport( {
+      level: 'error'
+    })
   ]
 } )
 
