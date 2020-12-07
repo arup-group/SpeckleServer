@@ -129,11 +129,15 @@ if ( cluster.isMaster ) {
 
  // Telemetry
   require( './app/telemetry/appTelemetry' )( app )
+  require( './app/telemetry/matomo' ) ( app )
+
 
   if ( process.env.INDENT_RESPONSES === 'true' ) { app.set( 'json spaces', 2 ) }
   if ( process.env.EXPOSE_EMAILS === 'true' ) { app.enable( 'expose emails' ) }
 
   require( './config/passport' )( passport )
+
+
 
   // register plugins with express
   plugins.forEach( plugin => {
@@ -156,6 +160,8 @@ if ( cluster.isMaster ) {
 
   // Routes
   // handle api versions gracefully
+  app.use((req, res, next) => {console.log(req.user); next()})
+
   app.use( '/api/v0', ( req, res ) => res.status( 410 ).json( { error: 'The v0 API has been removed.' } ) )
   require( './app/api/index' )( app, express, '/api', plugins )
   require( './app/api/index' )( app, express, '/api/v1', plugins )
