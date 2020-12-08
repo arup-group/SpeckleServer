@@ -45,6 +45,7 @@ module.exports = class SentryTransport extends TransportStream {
 
     const sentryLevel = this.levelsMap[winstonLevel];
 
+
     configureScope(scope => {
       if(user) scope.setUser(user);
       scope.setExtras(meta);
@@ -53,7 +54,7 @@ module.exports = class SentryTransport extends TransportStream {
 
     if([Severity.Fatal, Severity.Error].includes(sentryLevel)) {
       const error = message instanceof Error ? message : new ExtendedError(info)
-      const event = captureException(error)
+      captureException(error)
       return callback();
     }
 

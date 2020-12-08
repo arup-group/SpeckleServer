@@ -126,7 +126,7 @@ if ( cluster.isMaster ) {
   app.use( bodyParser.urlencoded( { extended: true } ) )
 
   app.use( passport.initialize( ) )
-
+  app.use( require( './app/api/middleware/ArupUser' ) )
  // Telemetry
   require( './app/telemetry/appTelemetry' )( app )
   require( './app/telemetry/initSentry')( app )
