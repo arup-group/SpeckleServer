@@ -160,7 +160,6 @@ if ( cluster.isMaster ) {
 
   // Routes
   // handle api versions gracefully
-  app.use((req, res, next) => {console.log(req.user); next()})
 
   app.use( '/api/v0', ( req, res ) => res.status( 410 ).json( { error: 'The v0 API has been removed.' } ) )
   require( './app/api/index' )( app, express, '/api', plugins )
