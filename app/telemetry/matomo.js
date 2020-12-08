@@ -7,7 +7,7 @@ const logger = require( '../../config/logger' )
 module.exports = (app) => {
   const matomo = new MatomoTracker(1, 'https://oasyssoftware.matomo.cloud/matomo.php')
   app.use(( req, res, next ) => {
-    logger.debug(req.user)
+    logger.info(req.user)
     const arupUser = req.user && req.user.email && req.user.email.includes('@arup.com')
     if(arupUser) {
       matomo.track({
