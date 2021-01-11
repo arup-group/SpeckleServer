@@ -10,12 +10,14 @@ module.exports = async ( req, res ) => {
 
   try {
     let project = await PermissionCheck( req.user, 'write', await Project.findOne( { _id: req.params.projectId } ) )
-    let stream = await PermissionCheck( req.user, 'write', await DataStream.findOne( { streamId: req.params.streamId }, 'canRead canWrite name streamId owner' ) )
+    let stream = await PermissionCheck( req.user, 'write', await DataStream.findOne( { streamId: req.params.streamId }, 'canRead canWrite name streamId owner jobNumber projects' ) )
 
     if ( !project || !stream )
       return res.status( 400 ).send( { success: false, message: 'Could not find project or stream.' } )
 
     project.streams.indexOf( stream.streamId ) === -1 ? project.streams.push( stream.streamId ) : null
+
+    stream.projects.indexOf( project.id ) === -1 ? stream.projects.push( project.id ) : null
 
     project.permissions.canRead.forEach( id => {
       stream.canRead.indexOf( id ) === -1 ? stream.canRead.push( id ) : null

@@ -42,7 +42,9 @@ var dataStreamSchema = mongoose.Schema( {
   // it's set by default to NOPE
   onlineEditable: { type: Boolean, default: false },
 
-  jobNumber: { type: String, default: ''}
+  jobNumber: { type: String, default: ''},
+
+  projects: { type: Array, default: [ ] },
 
 }, { timestamps: true, strict: false } )
 

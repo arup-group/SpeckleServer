@@ -27,6 +27,8 @@ module.exports = ( req, res ) => {
       clone.createdAt = new Date()
       clone.updatedAt = new Date()
       clone.private = stream.private
+      clone.jobNumber = stream.jobNumber
+      clone.projects = stream.projects
 
       if ( req.user._id.toString() !== stream.owner.toString() ) {
         // new ownership

@@ -16,13 +16,15 @@ module.exports = async ( req, res ) => {
     if ( !project )
       return res.status( 400 ).send( { success: false, message: `Could not find projectId ${req.params.projectId}` } )
 
-    let streams = await DataStream.find( { streamId: { $in: project.streams } }, 'canWrite canRead streamId owner' )
+    let streams = await DataStream.find( { streamId: { $in: project.streams } }, 'canWrite canRead streamId owner projects jobNumber' )
     let allOtherProjects = await Project.find( { 'streams': { $in: project.streams }, _id: { $ne: project._id } } )
     let modifiedStreams = [ ]
 
     for ( let stream of streams ) {
       let otherProjects = allOtherProjects.filter( p => p.streams.indexOf( stream.streamId ) > -1 )
 
+      let projectIndex = stream.projects.indexOf( project.id )
+      stream.projects.splice( projectIndex, 1 )
       // Replaced these two with a gross forEach method below because casting Mongoose Arrays to
       // normal Javascript Arrays removes certain comparative properties when it comes to bson _id
       // objects. Check this link for vague explanations: https://stackoverflow.com/questions/41063587/mongoose-indexof-in-an-objectid-array
