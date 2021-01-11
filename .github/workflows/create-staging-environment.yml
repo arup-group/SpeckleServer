@@ -20,7 +20,7 @@ jobs:
       - name: Check if server is already running
         id: server
         run: |
-          status=$(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-${{  secrets.SPECKLE_URL }}/api)
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-${{  secrets.SPECKLE_URL }}/api || echo 500)
           echo "::set-output name=status::$status"
 
       - name: Repository Dispatch to create staging environment
@@ -35,10 +35,10 @@ jobs:
       - name: Wait until environment is up and running
         if: steps.server.outputs.status != 200
         run: |
-          SLEEP_PERIOD=5s
+          SLEEP_PERIOD=10s
           TRY=0
-          sleep 20s
-          until [ $TRY -eq 30 ] || [[ $(curl -H "Authorization: token ${{ secrets.REPO_ACCESS_TOKEN }}" https://api.github.com/repos/arup-group/tf-speckle-infrastructure/actions/workflows/staging-terraform.yml/runs | jq -r '.workflow_runs[0].status') == completed ]]; do
+          sleep 600s
+          until [ $TRY -eq 30 ] || [[ $(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-${{  secrets.SPECKLE_URL }}/api) == 200 ]]; do
             sleep $SLEEP_PERIOD
             TRY=$((TRY+1))
           done
