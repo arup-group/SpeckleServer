@@ -55,6 +55,29 @@ module.exports = async ( req, res ) => {
     } )
 
     await Promise.all( [ stream.save( ), project.save( ) ] )
+    if ( process.env.USE_KAFKA === 'true' ){
+      let { kafka, produceMsg } = require( '../../../config/kafkaHelper' )
+      let eventData = [ {
+        eventType: 'project-stream-removed',
+        projectId: project.id,
+        projectJobNumber: project.jobNumber,
+        streams: {
+          streamRemoved: stream.streamId,
+          streams: project.streams
+        }
+      },
+      {
+        eventType: 'stream-project-removed',
+        streamId: stream.streamId,
+        streamJobNumber: stream.jobNumber,
+        projects: {
+          projectRemoved: project.id,
+          projects: stream.projects
+        }
+      } ]
+      let topic = process.env.KAFKA_TOPIC
+      produceMsg( kafka, topic, eventData )
+    }
 
     return res.send( { success: true, project: project, stream: stream } )
   } catch ( err ) {

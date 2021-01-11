@@ -19,6 +19,24 @@ module.exports = ( req, res ) => {
       stream = stream.toObject()
       stream.objects = stream.objects.map( id => { return { type: 'Placeholder', _id: id } } )
       res.send( { success: true, resource: stream, message: 'Created stream' } )
+      return stream
+    } )
+    .then(  stream => {
+      if ( process.env.USE_KAFKA === 'true' ){
+        let { kafka, produceMsg } = require( '../../../config/kafkaHelper' )
+        let topic = process.env.KAFKA_TOPIC
+        let eventData = [ {
+          eventType: 'stream-created',
+          streamId: stream.streamId,
+          streamJobNumber: stream.jobNumber,
+          users: {
+            owner: stream.owner,
+            canRead: stream.canRead,
+            canWrite: stream.canWrite,
+          }
+        } ]
+        produceMsg( kafka, topic, eventData )
+      }
     } )
     .catch( err => {
       winston.error( JSON.stringify( err ) )

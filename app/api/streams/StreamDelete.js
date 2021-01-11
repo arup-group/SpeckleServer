@@ -10,7 +10,7 @@ module.exports = ( req, res ) => {
     return res.send( { success: false, message: 'No stream id provided.' } )
   }
   let myStream = null
-  DataStream.findOne( { streamId: req.params.streamId }, 'owner children canRead canWrite' )
+  DataStream.findOne( { streamId: req.params.streamId }, 'owner children canRead canWrite jobNumber projects' )
     .then( stream => PermissionCheck( req.user, 'delete', stream ) )
     .then( stream => {
       myStream = stream
@@ -18,6 +18,25 @@ module.exports = ( req, res ) => {
     } )
     .then( ( ) => {
       return res.send( { success: true, message: `Stream ${req.params.streamId} and its children have been deleted.`, deletedStreams: [ ...myStream.children, req.params.streamId ] } )
+    } )
+    .then( ( ) => {
+      if ( process.env.USE_KAFKA === 'true' ){
+        let { kafka, produceMsg } = require( '../../../config/kafkaHelper' )
+        let topic = process.env.KAFKA_TOPIC
+        let eventData = [ {
+          eventType: 'stream-deleted',
+          streamId: req.params.streamId,
+          streamJobNumber: myStream.jobNumber,
+          users: {
+            owner: myStream.owner,
+            canRead: myStream.canRead,
+            canWrite: myStream.canWrite,
+          },
+          children: myStream.children,
+          projects: myStream.projects
+        } ]
+        produceMsg( kafka, topic, eventData )
+      }
     } )
     .catch( err => {
       winston.error( JSON.stringify( err ) )

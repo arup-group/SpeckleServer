@@ -19,21 +19,35 @@ module.exports = async ( req, res ) => {
     let streams = await DataStream.find( { streamId: { $in: project.streams } }, 'canWrite canRead streamId owner projects jobNumber' )
     let allOtherProjects = await Project.find( { 'streams': { $in: project.streams }, _id: { $ne: project._id } } )
     let modifiedStreams = [ ]
+    let streamEventData = [ ]
 
     for ( let stream of streams ) {
       let otherProjects = allOtherProjects.filter( p => p.streams.indexOf( stream.streamId ) > -1 )
 
+      let modified = false
+
       let projectIndex = stream.projects.indexOf( project.id )
       stream.projects.splice( projectIndex, 1 )
+      if ( process.env.USE_KAFKA === 'true' ) {
+        let eventData = {
+          eventType: 'stream-project-removed',
+          streamId: stream.streamId,
+          streamJobNumber: stream.jobNumber,
+          projects: {
+            removedProject: project.id,
+            projects: stream.projects
+          }
+        }
+        streamEventData.push( eventData )
+        modified = true
+      }
+
       // Replaced these two with a gross forEach method below because casting Mongoose Arrays to
       // normal Javascript Arrays removes certain comparative properties when it comes to bson _id
       // objects. Check this link for vague explanations: https://stackoverflow.com/questions/41063587/mongoose-indexof-in-an-objectid-array
 
       // let otherCW = Array.prototype.concat( ...otherProjects.map( p => p.permissions.canWrite ) )
       // let otherCR = Array.prototype.concat( ...otherProjects.map( p => p.permissions.canRead ) )
-
-      let modified = false
-
 
       project.permissions.canRead.forEach( id => {
         let index = stream.canRead.indexOf( id )
@@ -69,6 +83,19 @@ module.exports = async ( req, res ) => {
       ...modifiedStreams.map( s => s.save( ) ),
       Project.deleteOne( { _id: project._id } )
     ] )
+
+    if ( process.env.USE_KAFKA === 'true' ){
+      let { kafka, produceMsg } = require( '../../../config/kafkaHelper' )
+      let topic = process.env.KAFKA_TOPIC
+      let eventData = [ {
+        eventType: 'project-deleted',
+        projectId: project.id,
+        projectJobNumber: project.jobNumber,
+        streams: project.streams
+      } ]
+      var events = streamEventData.concat( eventData )
+      produceMsg( kafka, topic, events )
+    }
 
     res.send( { success: true, message: 'Project was permanently deleted.', modifiedStreams: modifiedStreams } )
   } catch ( err ) {

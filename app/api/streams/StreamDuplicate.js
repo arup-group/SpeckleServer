@@ -56,6 +56,27 @@ module.exports = ( req, res ) => {
       delete parent[ 'layers' ]
       res.send( { success: true, clone: result, parent: parent } )
     } )
+    .then( () => {
+      if ( process.env.USE_KAFKA === 'true' ){
+        let { kafka, produceMsg } = require( '../../../config/kafkaHelper' )
+        let topic = process.env.KAFKA_TOPIC
+        let eventData = [ {
+          eventType: 'stream-cloned',
+          streamId: parent.streamId,
+          streamJobNumber: parent.jobNumber,
+          users: {
+            owner: parent.owner,
+            canRead: parent.canRead,
+            canWrite: parent.canWrite,
+          },
+          children: {
+            newCloneId: clone.streamId,
+            children: parent.children
+          }
+        } ]
+        produceMsg( kafka, topic, eventData )
+      }
+    } )
     .catch( err => {
       winston.error( JSON.stringify( err ) )
       res.status( 400 )

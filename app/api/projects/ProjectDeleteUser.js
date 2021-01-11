@@ -20,6 +20,8 @@ module.exports = async ( req, res ) => {
     let allOtherProjects = await Project.find( { 'streams': { $in: project.streams }, _id: { $ne: project._id } } )
     let allStreams = await DataStream.find( { streamId: { $in: project.streams } }, 'canWrite canRead streamId owner name' )
 
+    let streamEventData = [ ]
+
     for ( let streamId of project.streams ) {
       let otherProjects = allOtherProjects.filter( project => project.streams.indexOf( streamId ) > -1 )
       let stream = allStreams.find( s => s.streamId === streamId )
@@ -35,6 +37,21 @@ module.exports = async ( req, res ) => {
         streamsToPullWriteFrom.push( stream.streamId )
       else if ( pullRead )
         streamsToPullReadFrom.push( stream.streamId )
+
+      if ( process.env.USE_KAFKA === 'true' ){
+        let eventData = {
+          eventType: 'stream-user-removed',
+          streamId: stream.streamId,
+          streamJobNumber: stream.jobNumber,
+          users: {
+            owner: stream.owner,
+            canRead: stream.canRead,
+            canWrite: stream.canWrite,
+            userRemoved: req.params.userId
+          }
+        }
+        streamEventData.push( eventData )
+      }
     }
 
     if ( streamsToPullBothFrom.length > 0 )
@@ -53,6 +70,25 @@ module.exports = async ( req, res ) => {
     operations.push( project.save( ) )
 
     await Promise.all( operations )
+
+    if ( process.env.USE_KAFKA === 'true' ){
+      let { kafka, produceMsg } = require( '../../../config/kafkaHelper' )
+      let topic = process.env.KAFKA_TOPIC
+      let eventData = [ {
+        eventType: 'project-user-removed',
+        projectId: project.id,
+        projectJobNumber: project.jobNumber,
+        streams: project.streams,
+        users: {
+          owner: project.owner,
+          canRead: project.canRead,
+          canWrite: project.canWrite,
+          userRemoved: req.params.userId
+        }
+      } ]
+      produceMsg( kafka, topic, eventData )
+    }
+
     return res.send( { success: true, project: project, streamsToPullBothFrom: streamsToPullBothFrom, streamsToPullWriteFrom: streamsToPullWriteFrom, streamsToPullReadFrom: streamsToPullReadFrom } )
   } catch ( err ) {
     winston.error( JSON.stringify( err ) )

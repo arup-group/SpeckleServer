@@ -17,6 +17,7 @@ module.exports = async ( req, res ) => {
 
     let allOtherProjects = await Project.find( { 'streams': { $in: project.streams }, _id: { $ne: project._id } } )
     let allStreams = await DataStream.find( { streamId: { $in: project.streams } }, 'canWrite canRead streamId owner' )
+    let streamEventData = [ ]
 
     for ( let streamId of project.streams ) {
       let otherProjects = allOtherProjects.filter( project => project.streams.indexOf( streamId ) > -1 )
@@ -28,6 +29,21 @@ module.exports = async ( req, res ) => {
         streamsToAddReadAndPullWrite.push( streamId )
       } else if ( stream.canRead.indexOf( req.params.userId ) > -1 ) // lower key operation: will just add user to read in case he was not there
         streamsToAddToRead.push( streamId )
+
+      if ( process.env.USE_KAFKA === 'true' ){
+        let eventData = {
+          eventType: "stream-user-downgraded",
+          streamId: stream.streamId,
+          streamJobNumber: stream.jobNumber,
+          users: {
+            owner: stream.owner,
+            canRead: stream.canRead,
+            canWrite: stream.canWrite,
+            userDowngraded: req.params.userId
+          }
+        }
+        streamEventData.push( eventData )
+      }
     }
 
     // The following pulls the userId from canWrite, and adds it to its canRead array.
@@ -41,6 +57,26 @@ module.exports = async ( req, res ) => {
     project.permissions.canRead.indexOf( req.params.userId ) === -1 ? project.permissions.canRead.push( req.params.userId ) : null
 
     await Promise.all( [ ...operations, project.save( ) ] )
+
+    if ( process.env.USE_KAFKA === 'true' ){
+      let { kafka, produceMsg }= require( '../../../config/kafkaHelper' )
+      let topic = process.env.KAFKA_TOPIC
+      let eventData = [ {
+        eventType: 'project-user-downgraded',
+        projectId: project.id,
+        projectJobNumber: project.jobNumber,
+        streams: project.streams,
+        users: {
+          owner: project.owner,
+          canRead: project.canRead,
+          canWrite: project.canWrite,
+          userDowngraded: req.params.userId
+        }
+      } ]
+      var events = eventData.concat( streamEventData )
+      produceMsg( kafka, topic, events )
+    }
+
     return res.send( { success: true, project: project, streamsToAddReadAndPullWrite: streamsToAddReadAndPullWrite, streamsToAddToRead: streamsToAddToRead } )
   } catch ( err ) {
     winston.error( JSON.stringify( err ) )

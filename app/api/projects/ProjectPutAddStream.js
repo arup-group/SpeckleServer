@@ -32,6 +32,29 @@ module.exports = async ( req, res ) => {
     stream.canWrite.indexOf( project.owner ) === -1 ? stream.canWrite.push( project.owner ) : null
 
     await Promise.all( [ stream.save( ), project.save( ) ] )
+    if ( process.env.USE_KAFKA === 'true' ){
+      let { kafka, produceMsg } = require( '../../../config/kafkaHelper' )
+      let topic = process.env.KAFKA_TOPIC
+      let eventData = [ {
+        eventType: 'project-stream-added',
+        projectId: project.id,
+        projectJobNumber: project.jobNumber,
+        streams: {
+          streamAdded: stream.streamId,
+          stream: project.streams
+        }
+      },
+      {
+        eventType: 'stream-project-added',
+        streamId: stream.streamId,
+        streamJobNumber: stream.jobNumber,
+        projects: {
+          projectAdded: project.id,
+          projects: stream.projects
+        }
+      } ]
+      produceMsg( kafka, topic, eventData )
+    }
     return res.send( { success: true, project: project, stream: stream } )
   } catch ( err ) {
     winston.error( JSON.stringify( err ) )
