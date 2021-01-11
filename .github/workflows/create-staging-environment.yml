@@ -35,7 +35,7 @@ jobs:
       - name: Wait until environment is up and running
         if: steps.server.outputs.status != 200
         run: |
-          SLEEP_PERIOD=10s
+          SLEEP_PERIOD=20s
           TRY=0
           sleep 600s
           until [ $TRY -eq 30 ] || [[ $(curl -s -o /dev/null -w "%{http_code}" https://ireland.staging-${{  secrets.SPECKLE_URL }}/api) == 200 ]]; do
