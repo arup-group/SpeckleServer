@@ -54,7 +54,7 @@ module.exports = async ( req, res ) => {
 
     return res.send( { success: true, project: project, streams: streams } )
   } catch ( err ) {
-    winston.error( JSON.stringify( err ) )
+    winston.error( err )
     res.status( 400 )
     return res.send( { success: false, message: err.toString() } )
   }

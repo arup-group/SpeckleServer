@@ -42,7 +42,7 @@ module.exports = ( req, res ) => {
       res.send( { success: true, resources: list, message: 'Object list returned. If querying, duplication of objects in list will not be respected. Unless specified through adding a limit parameter, a default of 100 objects is returned per request.' } )
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( err.message === 'Unauthorized. Please log in.' ? 401 : 404 )
       res.send( { success: false, message: err.message, streamId: req.streamId } )
     } )

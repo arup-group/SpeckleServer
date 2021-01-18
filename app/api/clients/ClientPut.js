@@ -22,7 +22,7 @@ module.exports = ( req, res ) => {
       res.send( { success: true, message: 'Client updated following fields: ' + Object.keys( req.body ) } )
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( 400 )
       res.send( { success: false, message: err.toString( ) } )
     } )

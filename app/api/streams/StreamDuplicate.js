@@ -78,7 +78,7 @@ module.exports = ( req, res ) => {
       }
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( 400 )
       res.send( { success: false, message: err, streamId: req.streamId } )
     } )

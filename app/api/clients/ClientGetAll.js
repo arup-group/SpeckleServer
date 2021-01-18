@@ -11,7 +11,7 @@ module.exports = ( req, res ) => {
       res.send( { success: true, message: 'Client list for user ' + req.user._id, resources: clients } )
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( 400 )
       res.send( { success: false, message: err.toString() } )
     } )

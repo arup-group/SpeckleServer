@@ -79,7 +79,7 @@ module.exports = async ( req, res ) => {
 
     return res.send( { success: true, project: project, streamsToAddReadAndPullWrite: streamsToAddReadAndPullWrite, streamsToAddToRead: streamsToAddToRead } )
   } catch ( err ) {
-    winston.error( JSON.stringify( err ) )
+    winston.error( err )
     res.status( err.message.indexOf( 'authorised' ) >= 0 ? 401 : 404 ).send( { success: false, message: err.message } )
   }
 }

@@ -27,7 +27,7 @@ module.exports = {
             }
           } )
           .catch( err => {
-            winston.error( JSON.stringify( err ) )
+            winston.error( err )
           } )
       }
     } )

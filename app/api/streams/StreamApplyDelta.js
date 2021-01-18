@@ -84,6 +84,6 @@ module.exports = async ( req, res ) => {
   } catch ( err ) {
     //console.log( err )
     res.status( 400 )
-    res.send( { success: false, message: JSON.stringify( err ) } )
+    res.send( { success: false, message: err } )
   }
 }

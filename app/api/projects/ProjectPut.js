@@ -44,7 +44,7 @@ module.exports = ( req, res ) => {
       }
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( err.message.indexOf( 'authorised' ) >= 0 ? 401 : 404 )
       res.send( { success: false, message: err.message } )
     } )

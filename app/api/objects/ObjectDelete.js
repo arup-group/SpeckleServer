@@ -17,7 +17,7 @@ module.exports = ( req, res ) => {
       return res.send( { success: true, message: 'Object was deleted. Bye bye data.' } )
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( err.message === 'Unauthorized. Please log in.' ? 401 : 404 )
       res.send( { success: false, message: err.toString() } )
     } )

@@ -39,7 +39,7 @@ module.exports = ( req, res ) => {
       res.send( { success: true, message: 'Saved objects to database.', resources: newObjects.map( o => { return { type: 'Placeholder', _id: o._id } } ) } )
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( 400 )
       res.send( { success: false, message: err.toString( ) } )
     } )

@@ -16,7 +16,7 @@ module.exports = function ( req, res ) {
       return res.send( { success: true, message: 'Comment edited', fields: Object.keys( req.body ) } )
     } )
     .catch( err => {
-      winston.error( JSON.stringify( err ) )
+      winston.error( err )
       res.status( err.message.indexOf( 'authorised' ) >= 0 ? 401 : 404 )
       res.send( { success: false, message: err.message, commentId: req.commentId } )
     } )
