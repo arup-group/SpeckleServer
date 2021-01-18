@@ -66,7 +66,7 @@ const produceMsg = async ( kafkaClient, topicName, eventData ) => {
     producer.disconnect()
     winston.debug( `${messages.messages.length} message(s) sent to Kafka...`  )
   } catch ( err ) {
-    winston.error( JSON.stringify( err ) )
+    winston.error( err )
   }
 }
 
