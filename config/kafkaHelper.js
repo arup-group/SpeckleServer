@@ -5,7 +5,7 @@ const { Kafka, logLevel } = require( 'kafkajs' )
 const initialKafkaClient = () => {
   const kafkaInit = new Kafka( {
     clientId: process.env.SERVER_NAME,
-    brokers: [ process.env.KAFKA_BROKERS ],
+    brokers: process.env.KAFKA_BROKERS.split( ',' ).map( s => s.trim() ),
     authenticationTimeout: 30000,
     reauthenticationThreshold: 10000,
     connectionTimeout: 30000,
@@ -64,6 +64,7 @@ const produceMsg = async ( kafkaClient, topicName, eventData ) => {
     await producer.connect()
     await producer.send( messages )
     producer.disconnect()
+    winston.debug( `${messages.messages.length} message(s) sent to Kafka...`  )
   } catch ( err ) {
     winston.error( JSON.stringify( err ) )
   }
