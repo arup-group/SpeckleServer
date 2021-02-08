@@ -137,8 +137,6 @@ if ( cluster.isMaster ) {
 
   require( './config/passport' )( passport )
 
-
-
   // register plugins with express
   plugins.forEach( plugin => {
     app.use( plugin.serveFrom, express.static( path.join( plugin.serveSource ? plugin.serveSource : plugin.sourceDir ) ) )
@@ -160,7 +158,6 @@ if ( cluster.isMaster ) {
 
   // Routes
   // handle api versions gracefully
-
   app.use( '/api/v0', ( req, res ) => res.status( 410 ).json( { error: 'The v0 API has been removed.' } ) )
   require( './app/api/index' )( app, express, '/api', plugins )
   require( './app/api/index' )( app, express, '/api/v1', plugins )
