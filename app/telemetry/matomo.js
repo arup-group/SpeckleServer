@@ -5,8 +5,6 @@ module.exports = (app) => {
   const matomoUrl = process.env.MATOMO_URL
   const matomoSite = process.env.MATOMO_SITE
   if(matomoUrl && matomoSite) {
-    // Site "2" is speckle
-    
     const matomo = new MatomoTracker(parseInt(matomoSite), matomoUrl)
     app.use(( req, res, next ) => {
       if(req.arupUser) {
@@ -22,7 +20,7 @@ module.exports = (app) => {
             '1': ['API version', 'v1'],
             '2': ['HTTP method', req.method]
           }),
-          // Auth0 email address
+          // Auth0 ID
           uid: req.arupUser._id
         })
       }
