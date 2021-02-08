@@ -1,10 +1,13 @@
+const { isInteger } = require('lodash')
 const MatomoTracker = require('matomo-tracker')
 
 module.exports = (app) => {
   const matomoUrl = process.env.MATOMO_URL
-  if(matomoUrl) {
+  const matomoSite = process.env.MATOMO_SITE
+  if(matomoUrl && matomoSite) {
     // Site "2" is speckle
-    const matomo = new MatomoTracker(2, matomoUrl)
+    
+    const matomo = new MatomoTracker(parseInt(matomoSite), matomoUrl)
     app.use(( req, res, next ) => {
       if(req.arupUser) {
         matomo.track({
