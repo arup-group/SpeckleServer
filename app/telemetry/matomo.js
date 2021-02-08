@@ -23,7 +23,7 @@ module.exports = (app) => {
             '2': ['HTTP method', req.method]
           }),
           // Auth0 email address
-          uid: req.arupUser.email
+          uid: req.arupUser._id
         })
       }
       next();
