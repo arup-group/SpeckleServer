@@ -34,6 +34,7 @@
     "jsonwebtoken": "^8.5.1",
     "kafkajs": "^1.15.0",
     "lodash": "^4.17.15",
+    "matomo-tracker": "^2.2.4",
     "mongoose": "^5.9.7",
     "node-machine-id": "^1.1.12",
     "nodemailer": "^6.4.6",
