@@ -129,6 +129,7 @@ if ( cluster.isMaster ) {
   app.use( require( './app/api/middleware/ArupUser' ) )
  // Telemetry
   require( './app/telemetry/appTelemetry' )( app )
+  require( './app/telemetry/matomo' ) ( app )
   require( './app/telemetry/initSentry')( app )
 
   if ( process.env.INDENT_RESPONSES === 'true' ) { app.set( 'json spaces', 2 ) }
