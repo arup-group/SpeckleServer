@@ -74,6 +74,9 @@ module.exports = function ( app, express, urlRoot, plugins ) {
   // get a user's streams xxx
   r.get( '/streams', mandatoryAuthorisation, require( './streams/StreamGetAll' ) )
 
+  // get a user's streams xxx (lean response intended for clients)
+  r.get( '/streams/lean', mandatoryAuthorisation, require( './streams/StreamGetAllLean' ) )
+
   // get every stream on the server
   r.get( '/streams/admin', mandatoryAuthorisation, adminCheck, require( './streams/StreamGetAdmin' ) )
 
