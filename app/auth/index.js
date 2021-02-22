@@ -41,8 +41,11 @@ module.exports = function ( app ) {
     if ( req.query.redirectUrl ) {
       let url = null
 
+      // Check if the redirect url contains tags such as <script> or <iframe>
       const containsTags = /^[<>]|(%3C)|(%3E)$/.test(req.query.redirectUrl)
 
+      // Returning <script> or <iframe> tags would run the code on the client's
+      // browser. Do not show the redirect url if it contains tags.
       if(containsTags) {
         req.session.errorMessage = `Invalid redirect url`
         return res.redirect( '/signin/error' )
