@@ -10,6 +10,7 @@ const expressWinston = require( 'express-winston' )
 const redis = require( 'redis' )
 const logger = require( './config/logger' )
 const URL = require( 'url' ).URL
+const helmet = require( 'helmet' )
 
 // load up .env
 const configResult = require( 'dotenv' ).config( { path: './.env' } )
@@ -120,6 +121,7 @@ if ( cluster.isMaster ) {
     logger.debug( 'Connected to mongo.' )
   } )
 
+  app.use( helmet() );
 
   // throws a 413 if over REQ_SIZE
   app.use( bodyParser.json( { limit: process.env.REQ_SIZE } ) )
