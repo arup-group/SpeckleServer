@@ -41,6 +41,13 @@ module.exports = function ( app ) {
     if ( req.query.redirectUrl ) {
       let url = null
 
+      const containsTags = /^[<>]|(%3C)|(%3E)$/.test(req.query.redirectUrl)
+
+      if(containsTags) {
+        req.session.errorMessage = `Invalid redirect url`
+        return res.redirect( '/signin/error' )
+      }
+
       try {
         url = new URL( req.query.redirectUrl )
       } catch ( err ) {
