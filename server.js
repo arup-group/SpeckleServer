@@ -121,7 +121,9 @@ if ( cluster.isMaster ) {
     logger.debug( 'Connected to mongo.' )
   } )
 
-  app.use( helmet() );
+  app.use( helmet({
+    contentSecurityPolicy: false
+  }))
 
   // throws a 413 if over REQ_SIZE
   app.use( bodyParser.json( { limit: process.env.REQ_SIZE } ) )
