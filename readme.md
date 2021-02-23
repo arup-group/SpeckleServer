@@ -1,17 +1,11 @@
-# Speckle Server v1
-[![DOI](https://zenodo.org/badge/74043433.svg)](https://zenodo.org/badge/latestdoi/74043433) [![Build status](https://ci.appveyor.com/api/projects/status/xo9uun3wdo5x8538?svg=true)](https://ci.appveyor.com/project/SpeckleWorks/speckleserver) ![Discourse status](https://img.shields.io/discourse/https/discourse.speckle.works/status.svg) ![GitHub](https://img.shields.io/github/license/speckleworks/speckleserver.svg) ![Twitter Follow](https://img.shields.io/twitter/follow/speckle_works.svg) 
 
+# Speckle Server
 
-This is the Speckle Server, which coordinates communications between the various bits of the Speckle ecosystem.
+This is the Speckle Server (Community Extension), which coordinates communications between the various bits of the Speckle ecosystem. 
 
-
-## ⚠️ IMPORTANT ⚠️
-
-Speckle v1 has reached EOL and is no longer mainatined. Check out our brand new 👉 [Speckle v2](https://github.com/specklesystems)!
-Read more about the announcemnt [here](https://speckle.systems/blog/speckle2-vision-and-faq) and check out or new [website](https://speckle.systems).
-
-
-
+The Community Extension Speckle were born when the Speckle Systems crew discontinued Speckle v1, and started development a v2. At the moment,
+[Arup Group](https://www.arup.com/) is maintaining the Community Extension produts, and developing them further to meet the needs of our project
+teams and clients. Our work remains open source, and we hope that will be valuable to anyone else working with Speckle v1.
 
 ## API
 
@@ -22,26 +16,15 @@ Read more about the announcemnt [here](https://speckle.systems/blog/speckle2-vis
 The Speckle Server is a nodejs (`v.8+`, `latest stable` preffered) app.
 
 - Dependencies: [mongodb](https://www.mongodb.com/download-center/community) and [redis](https://redis.io/). 
-- Clone this repo `git clone https://github.com/speckleworks/SpeckleServer.git`
+- Clone this repo `git clone https://github.com/arup-group/SpeckleServer.git`
 - Configuration: create a `.env` using `.env-base` as a template, and fill in the required information.
 - Run `npm install` and thereafter `npm run`.
-
 
 #### ⚠️ **Warning**: if these instructions seem confusing and you want to use speckle in production, please consult someone with more experience! Incorrect configuration can have **security and reliability implications**. 
 
 > Community supported instructions by on how to set up a development server (thanks @arendvw!) can be found in [this discourse thread](https://discourse.speckle.works/t/speckle-server-debian-9-installation-notes-for-development-machines/344). Feel free to contribute your own experiences there, or ask questions.
 
-#### 🍰 If you just want to try out speckle, at your own risk, you can use `https://hestia.speckle.works/api`.
-
-**Note**: hestia is hosted on Digital Ocean. If you want to signup to digital ocean and support the running costs of speckle, use [the following affiliate link](https://m.do.co/c/947a2b5d7dc1) to get $100 in credit. 
-
-To install a front-end plugin, such as the [admin ui](https://github.com/speckleworks/SpeckleAdmin), clone the respective repo in the `plugins` folder of the server.
-
-#### Deploy to Heroku
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-
-**Note**: this doesn't include any front-end plugins, so you'll need to interact with a Heroku-hosted server via another front-end, such as https://app.speckle.systems.
+To install a front-end plugin, such as the [admin ui](https://github.com/arup-group/SpeckleAdmin), clone the respective repo in the `plugins` folder of the server.
 
 ### Deploy at Arup
 
@@ -82,5 +65,11 @@ If you have any questions, you can get in touch with the rest of the world-wide 
 - [Discourse](https://discourse.speckle.works)
 - [Slack](https://slacker.speckle.works)
 
+If you have any questions about the Community Extensions, please contact [David de Koning](https://github.com/daviddekoning/)
+
 ## License
 [MIT](https://github.com/speckleworks/SpeckleServer/blob/master/LICENSE)
+
+## v2
+
+Speckle Systems is working on a v2 of the Speckle ecosystem. Read more about the announcemnt [here](https://speckle.systems/blog/speckle2-vision-and-faq) and check out their new [website](https://speckle.systems).
