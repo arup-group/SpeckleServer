@@ -38,6 +38,7 @@ module.exports = ( req, res ) => {
     ancestors: 1,
     tags: 1,
     layers: 1,
+    updatedAt: 1
   }
 
   let sortOptions = {
