@@ -41,20 +41,10 @@ module.exports = function ( app ) {
     if ( req.query.redirectUrl ) {
       let url = null
 
-      // Check if the redirect url contains tags such as <script> or <iframe>
-      const containsTags = /^[<>]|(%3C)|(%3E)$/.test(req.query.redirectUrl)
-
-      // Returning <script> or <iframe> tags would run the code on the client's
-      // browser. Do not show the redirect url if it contains tags.
-      if(containsTags) {
-        req.session.errorMessage = `Invalid redirect url`
-        return res.redirect( '/signin/error' )
-      }
-
       try {
         url = new URL( req.query.redirectUrl )
       } catch ( err ) {
-        req.session.errorMessage = `Invalid redirect url: <b>${req.query.redirectUrl}</b>`
+        req.session.errorMessage = `Invalid redirect url.`
         return res.redirect( '/signin/error' )
       }
 
@@ -66,7 +56,7 @@ module.exports = function ( app ) {
       let ind = redirectUrls.findIndex( u => u.host === url.host )
 
       if ( ind === -1 ) {
-        req.session.errorMessage = `The redirect url (<code>${req.query.redirectUrl}</code>) is not whitelisted on this server (${process.env.SERVER_NAME}). <hr> <small>Please contact your server administrator.</small>`
+        req.session.errorMessage = `The redirect url is not whitelisted on this server (${process.env.SERVER_NAME}). <hr> <small>Please contact your server administrator.</small>`
         return res.redirect( '/signin/error' )
       }
 
