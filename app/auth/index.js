@@ -40,11 +40,12 @@ module.exports = function ( app ) {
   let redirectCheck = ( req, res, next ) => {
     if ( req.query.redirectUrl ) {
       let url = null
+      const adminUsers = process.env.ADMIN_USERS
 
       try {
         url = new URL( req.query.redirectUrl )
       } catch ( err ) {
-        req.session.errorMessage = `Invalid redirect url.`
+        req.session.errorMessage = `Invalid redirect url. <hr> <small>Please contact your server administrator: ${adminUsers}</small>`
         return res.redirect( '/signin/error' )
       }
 
@@ -56,12 +57,12 @@ module.exports = function ( app ) {
       let ind = redirectUrls.findIndex( u => u.host === url.host )
 
       if ( ind === -1 ) {
-        req.session.errorMessage = `The redirect url is not whitelisted on this server (${process.env.SERVER_NAME}). <hr> <small>Please contact your server administrator.</small>`
+        req.session.errorMessage = `The redirect url is not whitelisted on this server (${process.env.SERVER_NAME}). <hr> <small>Please contact your server administrator: ${adminUsers}.</small>`
         return res.redirect( '/signin/error' )
       }
 
       if ( url.protocol === 'http:' && process.env.ALLOW_INSECURE_REDIRECTS === 'false' ) {
-        req.session.errorMessage = `Insecure urls (non-http<b>s</b>) are not allowed as redirects. <hr> <small>Please contact your server administrator.</small>`
+        req.session.errorMessage = `Insecure urls (non-http<b>s</b>) are not allowed as redirects. <hr> <small>Please contact your server administrator: ${adminUsers}</small>`
         return res.redirect( '/signin/error' )
       }
 
