@@ -10,6 +10,7 @@ const URL = require( 'url' ).URL
 const User = require( '../../models/User' )
 const ActionToken = require( '../../models/ActionToken' )
 const SendPasswordReset = require( '../../app/email/index' ).SendPasswordReset
+const winston = require( '../../config/logger' )
 
 module.exports = function ( app ) {
 
@@ -46,6 +47,7 @@ module.exports = function ( app ) {
         url = new URL( req.query.redirectUrl )
       } catch ( err ) {
         req.session.errorMessage = `Invalid redirect url. <hr> <small>Please contact your server administrator: ${adminUsers}</small>`
+        winston.error(`Invalid redirect URL: ${req.query.redirectUrl}`)
         return res.redirect( '/signin/error' )
       }
 
@@ -58,11 +60,13 @@ module.exports = function ( app ) {
 
       if ( ind === -1 ) {
         req.session.errorMessage = `The redirect url is not whitelisted on this server (${process.env.SERVER_NAME}). <hr> <small>Please contact your server administrator: ${adminUsers}.</small>`
+        winston.error(`Redirect URL not indexed: ${req.query.redirectUrl}`)
         return res.redirect( '/signin/error' )
       }
 
       if ( url.protocol === 'http:' && process.env.ALLOW_INSECURE_REDIRECTS === 'false' ) {
         req.session.errorMessage = `Insecure urls (non-http<b>s</b>) are not allowed as redirects. <hr> <small>Please contact your server administrator: ${adminUsers}</small>`
+        winston.error(`Redirect URL insecure: ${req.query.redirectUrl}`)
         return res.redirect( '/signin/error' )
       }
 
