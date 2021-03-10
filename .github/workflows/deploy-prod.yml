@@ -21,6 +21,8 @@ jobs:
   prodDeploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      
       - name: Region map
         id: regionMap
         run: |
@@ -107,6 +109,17 @@ jobs:
           done
           updated=$([ $TRY -lt 30 ] && echo true || echo false) 
           echo "::set-output name=updated::$updated"
+          
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_ARUP_DIGITAL_AUTH_TOKEN }}
+          SENTRY_ORG: arup-digital
+          SENTRY_PROJECT: speckle-server
+        with:
+          version:  ${{ github.event.inputs.tag }}
+          version_prefix: 'v'
+          sourcemaps: ./
 
       - name: Download logs from failed run
         if: steps.serverDeployed.outputs.outcome == 'Failed' || steps.serverUpdateCheck.outputs.updated == 'false'
