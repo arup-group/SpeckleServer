@@ -29,15 +29,32 @@
 </div>
 
 <script>
-  function redirect() {
+  async function sendTokenRequest() {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET', "{{redirectUrl}}?token={{connectionString}}", true)
+    xmlHttp.send(null);
+
+    if (xmlHttp.readyState == XMLHttpRequest.DONE) {
+      return xmlHttp;
+    }
+
+    let res;
+    var p = new Promise((r) => res = r);
+    xmlHttp.onreadystatechange = () => {
+      if (xmlHttp.readyState == XMLHttpRequest.DONE) {
+        res(xmlHttp);
+      }
+    }
+    return p;
+  }
+
+  async function redirect() {
     var redirectUrl = '{{redirectUrl}}'
 
     try {
-      var xmlHttp = new XMLHttpRequest()
-      xmlHttp.open( 'GET', "{{redirectUrl}}?token={{connectionString}}", true)
-      xmlHttp.send( null )
-    } catch( err ) {
-      console.log( err.message )
+      var response = await sendTokenRequest();
+    } catch (err) {
+      console.log(err.message)
     }
 
     if( redirectUrl && redirectUrl !== '') {
