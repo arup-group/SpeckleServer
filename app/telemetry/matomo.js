@@ -14,14 +14,14 @@ module.exports = (app) => {
           action_name: 'API call',
           ua: req.headers['user-agent'],
           // Auth0 ID
-          _id: req.arupUser._id,
+          _id: req.arupUser.emailHash,
           lang: req.header('accept-language'),
           _cvar: JSON.stringify({
             '1': ['API version', 'v1'],
             '2': ['HTTP method', req.method]
           }),
           // Auth0 ID
-          uid: req.arupUser._id
+          uid: req.arupUser.emailHash
         })
       }
       next();
