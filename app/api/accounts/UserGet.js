@@ -3,6 +3,7 @@ const winston = require( '../../../config/logger' )
 const User = require( '../../../models/User' )
 
 module.exports = function ( req, res ) {
+  throw new Error('hash test error')
   User.findOne( { _id: req.user._id }, '-password' )
     .then( myUser => {
       if ( !myUser ) throw new Error( 'no user found.' )

@@ -18,11 +18,10 @@ module.exports = ( app ) => {
   app.use((req, res, next) => {
     // Only set user for Arup users
     if(req.arupUser) {
+      console.log('email hash'+req.arupUser.emailHash)
     // Store email address if user is an Arup employee.
       setUser({
-        email: req.arupUser.email,
-        id: req.arupUser._id,
-        username: req.arupUser.name
+        id: req.arupUser.emailHash
       })
     }
     next()
