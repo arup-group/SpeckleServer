@@ -148,7 +148,7 @@ module.exports = {
           } )
           .catch( err => {
             client.send( err.message )
-            winston.error( `WS join room: ` + err.message )
+            winston.debug( `WS join room: ` + err.message )
           } )
       }
     },

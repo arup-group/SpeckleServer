@@ -43,8 +43,13 @@ module.exports = class SentryTransport extends TransportStream {
       ...meta
     } = info
 
-    const sentryLevel = this.levelsMap[winstonLevel];
+    // Ignore informational events
+    const messageComparison = message.toLowerCase()
+    if(messageComparison.includes('authorised') || messageComparison.includes('resource not found')) {
+      callback()
+    }
 
+    const sentryLevel = this.levelsMap[winstonLevel];
 
     configureScope(scope => {
       if(user) scope.setUser(user);
