@@ -1,6 +1,12 @@
 const TransportStream = require('winston-transport');
 const { Severity, configureScope, captureException, flush } = require('@sentry/node');
 
+const ignoredInfoEvents = [
+  'You are not authorised to read.',
+  'You are not authorised to write.',
+  'Resource not found.'
+]
+
 const DEFAULT_LEVELS_MAP = {
   silly: Severity.Debug,
   verbose: Severity.Debug,
@@ -43,10 +49,9 @@ module.exports = class SentryTransport extends TransportStream {
       ...meta
     } = info
 
-    // Ignore informational events
-    const messageComparison = message.toLowerCase()
-    if(messageComparison.includes('authorised') || messageComparison.includes('resource not found')) {
-      callback()
+    // Don't send informational events to sentry
+    if(ignoredInfoEvents.includes(message)) {
+      return callback()
     }
 
     const sentryLevel = this.levelsMap[winstonLevel];
