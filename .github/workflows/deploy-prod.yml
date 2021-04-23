@@ -9,7 +9,7 @@ on:
         required: true
         default: '1.9.10'
       region:
-        description: The region to deploy to ireland, hongkong, australia, uk or canada
+        description: The region to deploy to ireland, hongkong, australia, uk, hs2 or canada
         required: true
         default: 'ireland'
       ansibleScriptsBranch:
@@ -32,7 +32,7 @@ jobs:
            awsRegion=ap-east-1
           elif [ ${{ github.event.inputs.region }} == australia ]; then
            awsRegion=ap-southeast-2
-          elif [ ${{ github.event.inputs.region }} == uk ]; then
+          elif [ ${{ github.event.inputs.region }} == uk || ${{ github.event.inputs.region }} == hs2 ]; then
            awsRegion=eu-west-2
           elif [ ${{ github.event.inputs.region }} == canada ]; then
            awsRegion=ca-central-1
