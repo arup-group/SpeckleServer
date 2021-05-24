@@ -31,7 +31,7 @@ module.exports = {
             ws.send( 'Warning: you missed 5 mins of pings. After 10, you will be kicked!' )
           }
           if ( ws.missedPingsCount > 10 ) {
-            winston.error( chalk.red( 'Removing client socket after 10 mins of inactivity.' ) )
+            winston.warn( chalk.red( 'Removing client socket after 10 mins of inactivity.' ) )
             ws.send( 'You missed 10 minutes of pings. Bye!' )
             this.remove( ws )
             return
