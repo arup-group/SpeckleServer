@@ -39,11 +39,14 @@ const newMessage = ( topicName, eventData ) => {
       keyResource = 'project'
       keyId = eventData[singleEvent].projectId
     } // TODO: add other resources
+    let time = Date.now()
+    let sourceTimestamp = new Date( time ).toISOString();
     let message = {
       key: `${serverName}-${keyResource}-${keyId}`,
       value: JSON.stringify( eventData[singleEvent] ),
       headers: {
-          'id': `${Date.now()}`
+          'id': `${time}`,
+          'speckleTime': `${sourceTimestamp}`
       }
     }
     messageValues.push( message )
