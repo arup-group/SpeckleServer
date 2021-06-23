@@ -69,6 +69,7 @@ module.exports = ( req, res ) => {
           eventType: 'stream-updated',
           streamId: stream.streamId,
           streamJobNumber: stream.jobNumber,
+          fieldsPatched: Object.keys( req.body )
         }
 
         if ( usersChange ){

@@ -27,8 +27,8 @@ module.exports = ( req, res ) => {
         return res.send( { success: false, message: 'A limit of 500 objects per call can be returned. Please add a skip parameter to your request.' } )
       }
 
-      // set default of 100 objects retrieved per request
-      if ( !query.options.limit ) query.options.limit = 100
+      // set default of 200 objects retrieved per request
+      if ( !query.options.limit ) query.options.limit = 200
 
       query.criteria[ '_id' ] = { $in: stream.objects }
       return SpeckleObject.find( query.criteria, query.options.fields, { sort: query.options.sort, skip: query.options.skip, limit: query.options.limit } )
@@ -39,7 +39,7 @@ module.exports = ( req, res ) => {
         if ( match ) arr.push( match )
         return arr
       }, [ ] )
-      res.send( { success: true, resources: list, message: 'Object list returned. If querying, duplication of objects in list will not be respected. Unless specified through adding a limit parameter, a default of 100 objects is returned per request.' } )
+      res.send( { success: true, resources: list, message: 'Object list returned. If querying, duplication of objects in list will not be respected. Unless specified through adding a limit parameter, a default of 200 objects is returned per request.' } )
     } )
     .catch( err => {
       winston.error( err )

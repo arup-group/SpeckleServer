@@ -40,8 +40,8 @@ module.exports = ( req, res ) => {
     // { 'private': false }
   ]
 
-  // set default of 100 streams retrieved per request
-  if ( !query.options.limit ) query.options.limit = 100
+  // set default of 200 streams retrieved per request
+  if ( !query.options.limit ) query.options.limit = 200
 
   DataStream.find( finalCriteria, query.options.fields, { sort: query.options.sort, skip: query.options.skip, limit: query.options.limit } )
     .populate( { path: 'canRead', select: userSelect } )
@@ -66,7 +66,7 @@ module.exports = ( req, res ) => {
         if ( streams[ i ].objects ) streams[ i ].objects = streams[ i ].objects.map( o => { return { _id: o.toString( ), type: 'Placeholder' } } )
       } )
 
-      res.send( { success: true, message: 'Stream list returned. Contains both owned and shared with streams. Unless specified through adding a limit parameter, a default of 100 streams is returned per request.', resources: streams } )
+      res.send( { success: true, message: 'Stream list returned. Contains both owned and shared with streams. Unless specified through adding a limit parameter, a default of 200 streams is returned per request.', resources: streams } )
     } )
     .catch( err => {
       winston.error( err )
