@@ -41,6 +41,9 @@ module.exports = function ( app, express, urlRoot, plugins ) {
   // search profiles by email xxx
   r.post( '/accounts/search', mandatoryAuthorisation, require( './accounts/UserSearch' ) )
 
+  // refresh api token
+  r.post( '/accounts/refresh', mandatoryAuthorisation, require( './accounts/UserRefresh' ) )
+
   // TODOs:
   // API call to send a new verification email
   // API call to send a password reset email
