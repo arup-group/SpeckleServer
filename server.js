@@ -122,7 +122,8 @@ if ( cluster.isMaster ) {
   } )
 
   app.use( helmet({
-    contentSecurityPolicy: false
+    contentSecurityPolicy: false,
+    frameguard: false
   }))
 
   // throws a 413 if over REQ_SIZE
