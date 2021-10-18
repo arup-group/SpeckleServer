@@ -121,10 +121,16 @@ if ( cluster.isMaster ) {
     logger.debug( 'Connected to mongo.' )
   } )
 
-  app.use( helmet({
-    contentSecurityPolicy: false,
-    frameguard: false
-  }))
+  // Add header security to responses
+  app.use(helmet.dnsPrefetchControl());
+  app.use(helmet.expectCt());
+  app.use(helmet.hidePoweredBy());
+  app.use(helmet.hsts());
+  app.use(helmet.ieNoOpen());
+  app.use(helmet.noSniff());
+  app.use(helmet.permittedCrossDomainPolicies());
+  app.use(helmet.referrerPolicy());
+  app.use(helmet.xssFilter());
 
   // throws a 413 if over REQ_SIZE
   app.use( bodyParser.json( { limit: process.env.REQ_SIZE } ) )
