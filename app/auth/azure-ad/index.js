@@ -24,6 +24,7 @@ module.exports = {
       allowHttpForRedirectUrl: true,
       clientSecret: process.env.AZUREAD_CLIENT_SECRET,
       scope: [ 'profile', 'email', 'openid' ],
+      loggingLenvel: 'info'
       // passReqToCallback: true
     }, async ( iss, sub, profile, done ) => {
       done( null, profile )
@@ -44,6 +45,7 @@ module.exports = {
       async ( req, res, next ) => {
           if ( !req.user ) {
             req.session.errorMessage = 'Failed to retrieve user from the Azure AD auth.'
+            winston.error( req.session.errorMessage )
             return res.redirect( '/signin/error' )
           }
 
@@ -52,6 +54,7 @@ module.exports = {
 
           if ( !name || !email ) {
             req.session.errorMessage = 'Failed to retrieve email and name from the Azure AD auth.'
+            winston.error( req.session.errorMessage )
             return res.redirect( '/signin/error' )
           }
 
