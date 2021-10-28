@@ -7,7 +7,6 @@ const jwt = require( 'jsonwebtoken' )
 
 const winston = require( '../../../config/logger' )
 const User = require( '../../../models/User' )
-const flash = require('connect-flash')
 
 module.exports = {
   init( app, sessionMiddleware, redirectCheck, handleLogin ) {
@@ -32,8 +31,6 @@ module.exports = {
     } )
 
     passport.use( strategy )
-
-    app.use(flash());
 
     app.get( '/signin/azure',
       sessionMiddleware,
