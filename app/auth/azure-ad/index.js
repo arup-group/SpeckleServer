@@ -46,7 +46,7 @@ module.exports = {
       redirectCheck,
       async (req, res, next) => {
         passport.authenticate( 'azuread-openidconnect',
-        ( err, user, info ) => {
+        async ( err, user, info ) => {
             if (err) { 
               winston.error(err)
               return next(err); 
