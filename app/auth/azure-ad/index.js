@@ -39,11 +39,19 @@ module.exports = {
     )
 
     app.post( '/signin/azure/callback',
+      (req, res, next) => {console.log('in route;');next()},
       sessionMiddleware,
+      (req, res, next) => {console.log('in session;');next()},
       redirectCheck,
-      async (req, res, next) => {
+      (req, res, next) => {console.log('after redirect;');next()},
+      (req, res, next) => {
         passport.authenticate( 'azuread-openidconnect',
         async ( err, user, info ) => {
+            console.log('In authentication logic');
+            console.log('User:', user)
+            console.log('Error: ', err)
+            console.log('info:', info)
+            console.log('req:', req.headers)
             if (err) { 
               winston.error(err)
               return next(err); 
@@ -88,7 +96,7 @@ module.exports = {
                 existingUser.providerProfiles[ 'azure' ] = user._json
                 existingUser.markModified( 'providerProfiles' )
 
-                await existingUser.save( )
+               await existingUser.save( )
 
                 req.user = userObj
                 return next( )
@@ -142,7 +150,7 @@ module.exports = {
               req.session.errorMessage = `Something went wrong. Server said: ${err.message}`
               return res.redirect( '/error' )
             }
-          })},
+          })(req, res, next)},
         handleLogin )
 
     return {
