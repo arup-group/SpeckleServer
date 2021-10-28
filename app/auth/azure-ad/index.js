@@ -7,6 +7,7 @@ const jwt = require( 'jsonwebtoken' )
 
 const winston = require( '../../../config/logger' )
 const User = require( '../../../models/User' )
+const flash = require('connect-flash')
 
 module.exports = {
   init( app, sessionMiddleware, redirectCheck, handleLogin ) {
@@ -32,6 +33,8 @@ module.exports = {
 
     passport.use( strategy )
 
+    app.use(flash());
+
     app.get( '/signin/azure',
       sessionMiddleware,
       redirectCheck,
@@ -41,7 +44,7 @@ module.exports = {
     app.post( '/signin/azure/callback',
       sessionMiddleware,
       redirectCheck,
-      passport.authenticate( 'azuread-openidconnect', { failureRedirect: '/signin/error' } ),
+      passport.authenticate( 'azuread-openidconnect', { failureRedirect: '/signin/error', failureFlash: true, successFlash: 'Welcome!' } ),
       async ( req, res, next ) => {
           if ( !req.user ) {
             req.session.errorMessage = 'Failed to retrieve user from the Azure AD auth.'
