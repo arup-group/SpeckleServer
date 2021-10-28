@@ -44,103 +44,108 @@ module.exports = {
     app.post( '/signin/azure/callback',
       sessionMiddleware,
       redirectCheck,
-      passport.authenticate( 'azuread-openidconnect', { failureRedirect: '/signin/error', failureFlash: true, successFlash: 'Welcome!' } ),
-      async ( req, res, next ) => {
-          if ( !req.user ) {
-            req.session.errorMessage = 'Failed to retrieve user from the Azure AD auth.'
-            winston.error( req.session.errorMessage )
-            return res.redirect( '/signin/error' )
-          }
+      async (req, res, next) => {
+        passport.authenticate( 'azuread-openidconnect',
+        ( err, user, info ) => {
+            if (err) { 
+              winston.error(err)
+              return next(err); 
+            }
+            if ( !user ) {
+              req.session.errorMessage = 'Failed to retrieve user from the Azure AD auth.'
+              winston.error( req.session.errorMessage )
+              return res.redirect( '/signin/error' )
+            }
 
-          let email = req.user._json.email
-          let name = req.user._json.name || req.user.displayName
+            let email = user._json.email
+            let name = user._json.name || user.displayName
 
-          if ( !name || !email ) {
-            req.session.errorMessage = 'Failed to retrieve email and name from the Azure AD auth.'
-            winston.error( req.session.errorMessage )
-            return res.redirect( '/signin/error' )
-          }
+            if ( !name || !email ) {
+              req.session.errorMessage = 'Failed to retrieve email and name from the Azure AD auth.'
+              winston.error( req.session.errorMessage )
+              return res.redirect( '/signin/error' )
+            }
 
-          try {
-            const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
-            let existingUser = await User.findOne( { email: email } )
-            // If user exists:
-            if ( existingUser ) {
-              // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
-              if ( adminUsers.includes( email.toLowerCase( ) ) )
-                existingUser.role = 'admin'
-                existingUser.markModified( 'role' )
+            try {
+              const adminUsers = process.env.ADMIN_USERS.split( ',' ).map( s => s.trim() );
+              let existingUser = await User.findOne( { email: email } )
+              // If user exists:
+              if ( existingUser ) {
+                // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
+                if ( adminUsers.includes( email.toLowerCase( ) ) )
+                  existingUser.role = 'admin'
+                  existingUser.markModified( 'role' )
 
-              let userObj = {
-                name: existingUser.name,
-                surname: existingUser.surname,
-                email: existingUser.email,
-                role: existingUser.role,
-                verified: existingUser.verified,
-                token: 'JWT ' + jwt.sign( { _id: existingUser._id, name: existingUser.name, email: existingUser.email }, process.env.SESSION_SECRET, { expiresIn: '24h' } ),
+                let userObj = {
+                  name: existingUser.name,
+                  surname: existingUser.surname,
+                  email: existingUser.email,
+                  role: existingUser.role,
+                  verified: existingUser.verified,
+                  token: 'JWT ' + jwt.sign( { _id: existingUser._id, name: existingUser.name, email: existingUser.email }, process.env.SESSION_SECRET, { expiresIn: '24h' } ),
+                }
+
+                existingUser.logins.push( { date: Date.now( ) } )
+                existingUser.markModified( 'logins' )
+
+                existingUser.providerProfiles[ 'azure' ] = user._json
+                existingUser.markModified( 'providerProfiles' )
+
+                await existingUser.save( )
+
+                req.user = userObj
+                return next( )
               }
 
-              existingUser.logins.push( { date: Date.now( ) } )
-              existingUser.markModified( 'logins' )
+              // If user does not exist:
+              let userCount = await User.count( {} )
+              let myUser = new User( {
+                email: email,
+                company: process.env.AZUREAD_ORG_NAME,
+                apitoken: null,
+                role: 'user',
+                verified: true, // If coming from an AD route, we assume the user's email is verified.
+                password: cryptoRandomString( { length: 20, type: 'base64' } ), // need a dummy password
+              } )
 
-              existingUser.providerProfiles[ 'azure' ] = req.user._json
-              existingUser.markModified( 'providerProfiles' )
+              myUser.providerProfiles[ 'azure' ] = user._json
+              myUser.apitoken = 'JWT ' + jwt.sign( { _id: myUser._id }, process.env.SESSION_SECRET, { expiresIn: '2y' } )
+              let token = 'JWT ' + jwt.sign( { _id: myUser._id, name: myUser.name, email: myUser.email }, process.env.SESSION_SECRET, { expiresIn: '24h' } )
 
-              await existingUser.save( )
+              if ( userCount === 0 && process.env.FIRST_USER_ADMIN === 'true' )
+                myUser.role = 'admin'
 
-              req.user = userObj
+              // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
+              if ( adminUsers.includes( email.toLowerCase( ) ) )
+                myUser.role = 'admin'
+
+              let namePieces = name.split( /(?<=^\S+)\s/ )
+
+              if ( namePieces.length === 2 ) {
+                myUser.name = namePieces[ 1 ]
+                myUser.surname = namePieces[ 0 ]
+              } else {
+                myUser.name = "Anonymous"
+                myUser.surname = name
+              }
+
+              await myUser.save( )
+
+              req.user = {
+                name: myUser.name,
+                surname: myUser.surname,
+                email: myUser.email,
+                role: myUser.role,
+                verified: myUser.verified,
+                token: token
+              }
               return next( )
+            } catch ( err ) {
+              winston.error( err )
+              req.session.errorMessage = `Something went wrong. Server said: ${err.message}`
+              return res.redirect( '/error' )
             }
-
-            // If user does not exist:
-            let userCount = await User.count( {} )
-            let myUser = new User( {
-              email: email,
-              company: process.env.AZUREAD_ORG_NAME,
-              apitoken: null,
-              role: 'user',
-              verified: true, // If coming from an AD route, we assume the user's email is verified.
-              password: cryptoRandomString( { length: 20, type: 'base64' } ), // need a dummy password
-            } )
-
-            myUser.providerProfiles[ 'azure' ] = req.user._json
-            myUser.apitoken = 'JWT ' + jwt.sign( { _id: myUser._id }, process.env.SESSION_SECRET, { expiresIn: '2y' } )
-            let token = 'JWT ' + jwt.sign( { _id: myUser._id, name: myUser.name, email: myUser.email }, process.env.SESSION_SECRET, { expiresIn: '24h' } )
-
-            if ( userCount === 0 && process.env.FIRST_USER_ADMIN === 'true' )
-              myUser.role = 'admin'
-
-            // If email provided is included in the list of emails associated with a server admins specified in .env, grant user an admin role
-            if ( adminUsers.includes( email.toLowerCase( ) ) )
-              myUser.role = 'admin'
-
-            let namePieces = name.split( /(?<=^\S+)\s/ )
-
-            if ( namePieces.length === 2 ) {
-              myUser.name = namePieces[ 1 ]
-              myUser.surname = namePieces[ 0 ]
-            } else {
-              myUser.name = "Anonymous"
-              myUser.surname = name
-            }
-
-            await myUser.save( )
-
-            req.user = {
-              name: myUser.name,
-              surname: myUser.surname,
-              email: myUser.email,
-              role: myUser.role,
-              verified: myUser.verified,
-              token: token
-            }
-            return next( )
-          } catch ( err ) {
-            winston.error( err )
-            req.session.errorMessage = `Something went wrong. Server said: ${err.message}`
-            return res.redirect( '/error' )
-          }
-        },
+          })},
         handleLogin )
 
     return {
