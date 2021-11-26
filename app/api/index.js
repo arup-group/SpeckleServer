@@ -58,6 +58,9 @@ module.exports = function ( app, express, urlRoot, plugins ) {
   // get a user's clients xxx
   r.get( '/clients', mandatoryAuthorisation, require( './clients/ClientGetAll' ) )
 
+  // get all the clients on the server
+  r.get( '/clients/admin', mandatoryAuthorisation, require( './clients/ClientGetAdmin' ) )
+
   // get a client / perm check 'read' xxx
   r.get( '/clients/:clientId', mandatoryAuthorisation, require( './clients/ClientGet' ) )
 
