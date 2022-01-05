@@ -34,8 +34,8 @@ module.exports = function ( app ) {
     saveUninitialized: true,
     cookie: {
       maxAge: 60000 * 3,
-      sameSite: 'none',
-      secure: true,
+      // sameSite: 'none',
+      secure: 'auto',
     },
     expires: new Date( Date.now( ) + 60000 * 3 ) // three minute expiration (not needed)
   } )
