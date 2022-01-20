@@ -20,15 +20,15 @@ module.exports = ( req, res ) => {
       streamObjects = stream.objects.map( o => o.toString( ) )
       let query = q2m( req.query )
 
-      // set max of 500 objects retrieved per request
-      if ( query.options.limit > 500 ) {
-        winston.error( 'More than 500 objects requested.' )
+      // set max of 5000 objects retrieved per request
+      if ( query.options.limit > 5000 ) {
+        winston.error( 'More than 5000 objects requested.' )
         res.status( 400 )
-        return res.send( { success: false, message: 'A limit of 500 objects per call can be returned. Please add a skip parameter to your request.' } )
+        return res.send( { success: false, message: 'A limit of 5000 objects per call can be returned. Please add a skip parameter to your request.' } )
       }
 
-      // set default of 200 objects retrieved per request
-      if ( !query.options.limit ) query.options.limit = 200
+      // set default of 2000 objects retrieved per request
+      if ( !query.options.limit ) query.options.limit = 2000
 
       query.criteria[ '_id' ] = { $in: stream.objects }
       return SpeckleObject.find( query.criteria, query.options.fields, { sort: query.options.sort, skip: query.options.skip, limit: query.options.limit } )
