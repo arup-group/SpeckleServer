@@ -24,7 +24,7 @@ module.exports = {
       allowHttpForRedirectUrl: true,
       clientSecret: process.env.AZUREAD_CLIENT_SECRET,
       scope: [ 'profile', 'email', 'openid' ],
-      loggingLenvel: 'info'
+      loggingLevel: 'info'
       // passReqToCallback: true
     }, async ( iss, sub, profile, done ) => {
       done( null, profile )
