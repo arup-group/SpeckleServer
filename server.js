@@ -100,6 +100,8 @@ if ( cluster.isMaster ) {
     }
   } ) )
 
+  app.set( 'trust proxy', true );
+
   // Mongo handlers
   mongoose.Promise = global.Promise
 
